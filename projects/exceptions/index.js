@@ -16,7 +16,35 @@
    isAllTrue([1, 2, 3, 4, 5], n => n < 10) // вернет true
    isAllTrue([100, 2, 3, 4, 5], n => n < 10) // вернет false
  */
-function isAllTrue(array, fn) {}
+
+function isAllTrue(array, fn) {
+  if (!Array.isArray(array) || array.length === 0) {
+    throw new Error('empty array');
+  }
+
+  if (typeof fn != 'function') {
+    throw new Error('fn is not a function');
+  }
+
+  for (const newAray of array) {
+    if (!fn(newAray)) {
+      return false;
+    }
+  }
+  /* 
+  for(const newAray of array) {
+    if(fn(newAray) == false) {    почему не сработает, если написать так?
+      return false ; 
+    }
+    */
+  /* array.forEach((person) => {
+     if(fn(person) == false){             или так
+       return false
+     } 
+   }) */
+
+  return true;
+}
 
 /*
  Задание 2:
@@ -34,7 +62,22 @@ function isAllTrue(array, fn) {}
    isSomeTrue([1, 2, 30, 4, 5], n => n > 20) // вернет true
    isSomeTrue([1, 2, 3, 4, 5], n => n > 20) // вернет false
  */
-function isSomeTrue(array, fn) {}
+function isSomeTrue(array, fn) {
+  if (!Array.isArray(array) || array.length === 0) {
+    throw new Error('empty array');
+  }
+
+  if (typeof fn != 'function') {
+    throw new Error('fn is not a function');
+  }
+
+  for (const newAray of array) {
+    if (fn(newAray)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /*
  Задание 3:
@@ -47,9 +90,32 @@ function isSomeTrue(array, fn) {}
  3.3: Необходимо выбрасывать исключение в случаях:
    - fn не является функцией (с текстом "fn is not a function")
  */
-function returnBadArguments(fn, ...args) {}
+function returnBadArguments(fn, ...args) {
+  if (typeof fn != 'function') {
+    throw new Error('fn is not a function');
+  }
+  const exeptions = [];
 
-/*
+  for (const el of args) {
+    try {
+      fn(el);
+    } catch {
+      exeptions.push(el);
+    }
+  }
+
+  return exeptions;
+}
+/* хотел сделать фичу, в которой 
+  
+    for(const el of args) {
+      if (fn(el)) {        //если  fn(el) выбросила исключение,  
+        exeptions.push(el); // то el пушится . но я не понял, как выражение fn(el) проверить на исключения. Проверяется только тем, что выражение переходит в catch?
+      } 
+
+  */
+
+/*1
  Задание 4:
 
  4.1: Функция имеет параметр number (по умолчанию - 0)
@@ -66,7 +132,51 @@ function returnBadArguments(fn, ...args) {}
    - number не является числом (с текстом "number is not a number")
    - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
-function calculator(number = 0) {}
+function calculator(number = 0) {
+  if (!Number.isInteger(number)) {
+    throw new Error('number is not a number');
+  }
+  return {
+    sum(...args) {
+      let result = number;
+
+      for (const el of args) {
+        result += Number(el);
+      }
+      return result;
+    },
+
+    dif(...args) {
+      let result = number;
+
+      for (const el of args) {
+        result -= Number(el);
+      }
+      return result;
+    },
+
+    div(...args) {
+      let result = number;
+
+      for (const el of args) {
+        if (el === 0) {
+          throw new Error('division by 0');
+        }
+        result /= Number(el);
+      }
+      return result;
+    },
+
+    mul(...args) {
+      let result = number;
+
+      for (const el of args) {
+        result *= Number(el);
+      }
+      return result;
+    },
+  };
+}
 
 /* При решении задач, постарайтесь использовать отладчик */
 
