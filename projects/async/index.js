@@ -39,7 +39,11 @@ const homeworkContainer = document.querySelector('#app');
  Массив городов пожно получить отправив асинхронный запрос по адресу
  https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
  */
-function loadTowns() {}
+function loadTowns() {
+  return fetch('https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json')
+    .then((res) => res.json())
+    .then((res) => res.sort((a, b) => a.name.localeCompare(b.name)));
+}
 
 /*
  Функция должна проверять встречается ли подстрока chunk в строке full
@@ -52,7 +56,9 @@ function loadTowns() {}
    isMatching('Moscow', 'SCO') // true
    isMatching('Moscow', 'Moscov') // false
  */
-function isMatching(full, chunk) {}
+function isMatching(full, chunk) {
+  return full.toLowerCase().includes(chunk.toLowerCase());
+}
 
 /* Блок с надписью "Загрузка" */
 const loadingBlock = homeworkContainer.querySelector('#loading-block');
@@ -67,8 +73,45 @@ const filterInput = homeworkContainer.querySelector('#filter-input');
 /* Блок с результатами поиска */
 const filterResult = homeworkContainer.querySelector('#filter-result');
 
-retryButton.addEventListener('click', () => {});
+filterBlock.style.display = 'none';
+loadingFailedBlock.style.display = 'none';
 
-filterInput.addEventListener('input', function () {});
+let towns = [];
+
+retryButton.addEventListener('click', () => {
+  //по клику на кнопку
+  startLoad();
+});
+async function startLoad() {
+  try {
+    towns = await loadTowns();
+    loadingBlock.style.display = 'none';
+    loadingFailedBlock.style.display = 'none';
+    filterBlock.style.display = 'block';
+  } catch (e) {
+    loadingFailedBlock.style.display = 'block';
+    loadingFailedBlock.style.color = 'red';
+    filterBlock.style.display = 'none';
+  }
+}
+filterInput.addEventListener('input', function () {
+  // при  keydown на инпут
+  whenKeydown(this.value);
+});
+
+function whenKeydown(keydown) {
+  filterResult.innerHTML = '';
+  const fragment = document.createDocumentFragment();
+
+  for (const town of towns) {
+    if (keydown && isMatching(town.name, keydown)) {
+      const townDiv = document.createElement('div');
+      townDiv.textContent = town.name;
+      fragment.append(townDiv);
+    }
+  }
+  filterResult.append(fragment);
+}
+startLoad();
 
 export { loadTowns, isMatching };
