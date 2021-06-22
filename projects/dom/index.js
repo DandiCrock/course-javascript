@@ -49,7 +49,7 @@ function findAllPSiblings(where) {
   const arr = [];
 
   for (const el of where.children) {
-    if (el.nextElementSibling.tagName === 'p') {
+    if (el.nextElementSibling && el.nextElementSibling.tagName === 'p') {
       arr.push(el);
     }
   }
@@ -97,7 +97,7 @@ function findError(where) {
  */
 function deleteTextNodes(where) {
   for (const child of where.childNodes) {
-    if (child.nodeType !== 1) {
+    if (child.nodeType === Element.TEXT_NODE) {
       child.parentNode.removeChild(child);
     }
   }
@@ -117,9 +117,9 @@ function deleteTextNodes(where) {
  */
 function deleteTextNodesRecursive(where) {
   for (const child of where.childNodes) {
-    if (child.nodeType !== 1) {
+    if (child.nodeType === Element.TEXT_NODE) {
       child.parentNode.removeChild(child);
-    } else if (child.nodeType === 1) {
+    } else if (child.nodeType === Element.ELEMENT_NODE) {
       deleteTextNodesRecursive(child);
     }
   }
@@ -161,15 +161,16 @@ function collectDOMStat(root) {
       } else {
         stat.tags[child.tagName] = 1;
       }
-    }
 
-    for (const className of child.classList) {
-      if (className in stat.classes) {
-        stat.classes[className]++;
-      } else {
-        stat.classes[className] = 1;
+      for (const className of child.classList) {
+        if (className in stat.classes) {
+          stat.classes[className]++;
+        } else {
+          stat.classes[className] = 1;
+        }
       }
     }
+
     collectDOMStat(child);
   }
   return stat;
@@ -207,7 +208,25 @@ function collectDOMStat(root) {
      nodes: [div]
    }
  */
-function observeChildNodes(where, fn) {}
+function observeChildNodes(where, fn) {
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      const removedNodes = mutation.removedNodes;
+      const addedNodes = mutation.addedNodes;
+      if (removedNodes.length > 0) {
+        fn({ type: 'remove', nodes: removedNodes });
+      }
+
+      if (addedNodes.length > 0) {
+        fn({ type: 'insert', nodes: addedNodes });
+      }
+    }
+  });
+  observer.observe(where, {
+    childList: true,
+    subtree: true,
+  });
+}
 
 export {
   createDivWithText,
